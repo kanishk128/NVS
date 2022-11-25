@@ -8,6 +8,7 @@
 #include <windows.h>
 #include<conio.h>
 #include<algorithm>
+#include<stdlib.h>
 using namespace std;
 class neighbour
 {
@@ -17,12 +18,12 @@ public:
 	int price;
 	int time;
 
-	neighbour(string name,float distance,int price,int time)
+	neighbour(string name,float distance)
 	{
 		this->name=name;
 		this->distance=distance;
-		this->price=price;
-		this->time=time;
+		this->price=distance*3;
+		this->time=distance;
 	}
 };
 class graph
@@ -38,10 +39,10 @@ public:
 		//type is metro by default
 		this->type=type;
 	}
-	void addEdge(string u,string v,int price, float distance,int time) //price in Rs,distance in km,time in minutes
+	void addEdge(string u,string v, float distance) //price in Rs,distance in km,time in minutes
 	{
-		neighbour neighbourOfU(v,distance,price,time);
-		neighbour neighbourOfV(u,distance,price,time);
+		neighbour neighbourOfU(v,distance);
+		neighbour neighbourOfV(u,distance);
 
 		neighbourMap[u].push_back(neighbourOfU); //adding v to the neighbour list of u
 		neighbourMap[v].push_back(neighbourOfV); //adding u to the neighbours list of v
@@ -54,14 +55,14 @@ public:
 			for(neighbour N:vertex.second)
 			{
 				cout<<city_name<<" : ";
-				cout<<N.name<<" "<<N.distance<<"kms Rs."<<N.price<<" "<<N.time<<"minutes\n";
+				cout<<N.name<<" "<<N.distance<<"kms Rs."<<N.price<<" "<<N.time<<" minutes\n";
 			}
 			cout<<endl;
 		}
 	}
 	void printPath(map<string,string> parent,string dest)
 	{
-		
+
 		//dest is source
 		if(parent[dest]=="")
 		{
@@ -85,7 +86,7 @@ public:
 		}
 
 		distMap[src]=0; //distance from src station to src station is zero
-		
+
 		for(pair<string,float> vertex:distMap)
 		{
 			string stationName=vertex.first;
@@ -118,8 +119,8 @@ public:
 			explored.insert(minStop);
 		}
 		float minD=distMap[dest];
-		int price=minD*5;
-		int time=minD*3;
+		int price=minD*1.5;
+		int time=minD*1;
 		cout<<"Route and other details are:";
 		cout<<endl;
 		cout<<src<<" to "<<dest<<":";
@@ -145,7 +146,7 @@ public:
 
 				// explore 'front'
 
-				cout << front << " ";
+				cout << front << ", ";
 				list<neighbour> neighbourList = neighbourMap[front];
 				for(neighbour n : neighbourList) {
 					if(visited.find(n.name) == visited.end()) {
@@ -162,23 +163,37 @@ public:
 };
 int main()
 {
+	char in;
 	graph g("metro");
-	//0->Def Col, 1->Mayur Vihar,2->CP,3->Noida,4->Ghaziabad
-	vector<string> names={"CP","Noida","Mayur Vihar","Ghaziabad","Def Col"};
-	g.addEdge("Def Col","Mayur Vihar",50,10,30);
-	g.addEdge("Def Col","CP",25,5,15);
-	g.addEdge("Mayur Vihar","Noida",5,1,3);
-	g.addEdge("CP","Noida",45,9,18);
-	g.addEdge("CP","Ghaziabad",10,2,6);
-	g.addEdge("Noida","Ghaziabad",40,8,24);
-	// g.print();
+	vector<string> names={"DLF Mall","Mayur Vihar Ext.","CP","Supreme Court","Huda","Logix","Qutab Minar","Sector 69","Dilli Haat","Railway Station","Electronic city","Airport"};
+	g.addEdge("DLF Mall","Mayur Vihar Ext.",12);
+	g.addEdge("DLF Mall","Logix",3);
+	g.addEdge("Logix","Sector 69",2);
+	g.addEdge("Sector 69","Electronic City",10);
+	g.addEdge("Sector 69","Dilli Haat",11);
+	g.addEdge("Electronic City","Airport",1);
+	g.addEdge("Dilli Haat","Railway Station",9);
+	g.addEdge("Airport","Railway Station",30);
+	g.addEdge("Railway Station","Qutab Minar",6);
+	g.addEdge("CP","Qutab Minar",8);
+	g.addEdge("Mayur Vihar Ext.","CP",7);
+	g.addEdge("CP","Supreme Court",13);
+	g.addEdge("Huda","Supreme Court",5);
+	g.addEdge("Huda","Railway Station",25);
 	system("Color 0A");
 	cout<<"Welcome!!!\n";
 	cout<<"Stations are: ";
-	g.bfs("CP");
-	getch();
+	g.bfs("DLF Mall");
+	cout<<"Do you wish to know a detailed overview of the network in terms of location, price and distance (Y/N)?";
+	cin>>in;
+	if (in=='Y' || in=='y')
+		{g.print();
+        getch();}
+    else
+        getch();
 	string src; //soruce station
 	system("Color 09");
+	fflush(stdin);
 	cout<<"Please enter your source station: ";
 	getline(cin,src);
 	while(find(names.begin(),names.end(),src)==names.end())
@@ -198,6 +213,7 @@ int main()
 		getline(cin,dest);
 	}
 	cout<<endl;
+	system("Color 0B");
 	g.dijkstra(src,dest);
 	return 0;
 }
